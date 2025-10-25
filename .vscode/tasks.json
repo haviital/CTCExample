@@ -1,0 +1,24 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "start cspect",
+            "type": "shell",
+            "command": "C:/bin/CSpect2_19_9_1/CSpect.exe", // For windows users: Remove 'mono' and add 'CSpect.exe' instead
+            "args": [
+                "-w2", // Window size
+                "-zxnext", // Use zxnext HW registers
+                "-fps",
+                //"-mmc=./", // Enable RST 8, emulate SW card at director ./  (the trailing slash is important)
+                "-mmc=C:/bin/CSpect2_19_9_1/mmc/", // Enable RST 8, emulate SW card at director ./  (the trailing slash is important)
+                "-tv", // Disable TV shader
+                //"-r", // Remember window settings
+                "-debug" // Start up in (CSpect) debugger
+            ],
+            "options": {
+                "cwd": "C:/bin/CSpect2_19_9_1/",
+            },
+            "problemMatcher": []
+        },
+	]
+}

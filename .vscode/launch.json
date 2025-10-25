@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "dezog",
+            "request": "launch",
+            "name": "cspect",
+            "remoteType": "cspect",
+            "z88dkv2": [
+                {
+                    "path": "*.lis",
+                    "srcDirs": [
+                        ""
+                    ],
+                    "mapFile": "test.map",
+                    "excludeFiles": []
+                },
+            ],
+            "startAutomatically": true,
+            "rootFolder": "${workspaceFolder}",
+            //"topOfStack": "__register_sp",
+            "load": "test.nex"
+        },
+    ]
+}
