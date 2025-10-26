@@ -1,5 +1,11 @@
 
-#include <z80.h>
+/*******************************************************************************
+ * CTC test program for ZX Spectrum Next'
+ * 2025, by Hannu Viitala
+ * Uses MIT license. See LICENSE file for details.
+ ******************************************************************************/
+
+ #include <z80.h>
 #include <arch/zxn.h>
 #include <input.h>
 #include <intrinsic.h>
@@ -79,47 +85,6 @@ static void init_isr_and_ctc(void)
     z80_bpoke(0x6162, 0xED);
     z80_bpoke(0x6163, 0x4D);
     
-    // *** Example by Taylorza
-    //   10 RUN AT 3: SAVE "asmctc.bas"
-    //   20 CLEAR $7fff
-    //   30 .asm
-    //   40 ;  org $8000
-    //   50 ;ctc0 equ $183b
-    //   60 ;ctc1 equ $193b
-    //   70 ;ctc2 equ $1a3b
-    //   80 ;ctc3 equ $1b3b
-    //   90 ;
-    //  100 ;  ld bc,ctc1
-    //  110 ;  call initcnt
-    //  120 ;  ld bc,ctc2
-    //  130 ;  call initcnt
-    //  140 ;  ld bc,ctc3
-    //  150 ;  call initcnt
-    //  160 ;
-    //  170 ;  jr starttmr
-    //  180 ;
-    //  190 ;initcnt
-    //  200 ;  ld a,%01000111
-    //  210 ;  out (c),a
-    //  220 ;  ld a,$ff
-    //  230 ;  out (c), a
-    //  240 ;  ret
-    //  250 ;
-    //  260 ;starttmr
-    //  270 ;  ld bc,ctc0
-    //  280 ;  ld a,%00000111
-    //  290 ;  out (c),a
-    //  300 ;  ld a, $ff
-    //  310 ;  out (c),a
-    //  320 ;  ret
-    //  330 ;;---------------------------
-    //  340 RANDOMIZE USR ($8000)
-    //  350 PRINT AT 0,0; IN ($183b);"  "
-    //  360 PRINT AT 1,0; IN ($193b);"  "
-    //  370 PRINT AT 2,0; IN ($1a3b);"  "
-    //  380 PRINT AT 3,0; IN ($1b3b);"  "
-    //  390 GO TO %350
-    
     // *** Z80 CTC port control word bits:
     // bit 7  interrupt
     // bit 6  counter (0: timer)
@@ -137,8 +102,8 @@ static void init_isr_and_ctc(void)
 
     // Init CTC channels 1, 2, and 3 as counters. The counter means that it is counting events from the previous channel.
     // The event happens when the previous counter rolls over to the setup value (0 or 128)
-    // Note: using 128 as the initial for big end counters so that the value will be correct from the start.
-    //       If 0 is used as the initial value, the ctc3counter will be zero until ctc0 and ctc1 and ctc2 have rolled 
+    // Note: using 128 as the initial for bigges end counter so that the value will be correct from the start.
+    //       If 0 is used as the initial value, the ctc3 counter will be zero until ctc0 and ctc1 and ctc2 have rolled 
     //       over once. That can be over 10 seconds. 
     z80_outp(CTC_CHANNEL_1_PORT_193B, 0x47); //%01000111 => counter|time constant follows|reset|control
     z80_outp(CTC_CHANNEL_1_PORT_193B, 0); // 0..255
