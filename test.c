@@ -135,12 +135,6 @@ static void init_isr_and_ctc(void)
     #define CTC_CHANNEL_2_PORT_1A3B 0x1A3B
     #define CTC_CHANNEL_3_PORT_1B3B 0x1B3B
 
-    // Init CTC channel 0 as a timer. Timer means it is counting from the system clock. 
-    // Timer means counting from the system clock (28 MHz), but only every 16th clock cycle (that is by design).
-    //z80_outp(CTC_CHANNEL_0_PORT_183B, 0x07); // %00000111 => time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_0_PORT_183B, 0x17); // %00010111 => rising edge|time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_0_PORT_183B, 0); // Init with 0. That starts the timer from 256.
-
     // Init CTC channels 1, 2, and 3 as counters. The counter means that it is counting events from the previous channel.
     // The event happens when the previous counter rolls over to the setup value (255). 
     //z80_outp(CTC_CHANNEL_1_PORT_193B, 0x47); // %01000111 => counter|time constant follows|reset|control
@@ -150,6 +144,12 @@ static void init_isr_and_ctc(void)
     z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0);
     z80_outp(CTC_CHANNEL_3_PORT_1B3B, 0x5f);
     z80_outp(CTC_CHANNEL_3_PORT_1B3B, 0);
+
+    // Init CTC channel 0 as a timer. Timer means it is counting from the system clock. 
+    // Timer means counting from the system clock (28 MHz), but only every 16th clock cycle (that is by design).
+    //z80_outp(CTC_CHANNEL_0_PORT_183B, 0x07); // %00000111 => time constant follows|reset|control
+    z80_outp(CTC_CHANNEL_0_PORT_183B, 0x17); // %00010111 => rising edge|time constant follows|reset|control
+    z80_outp(CTC_CHANNEL_0_PORT_183B, 0); // Init with 0. That starts the timer from 256.
 
     intrinsic_ei();
 }
@@ -168,7 +168,7 @@ static void test(void)
         // If ctc0 is 5 or smaller it can affect to the other chained counters if it reaches 0 before all ctc conters are read.
         // That would give an incorrect result. To avoid that we wait until ctc0 rolls over to 255.
         // Note that as it waits max 5 ticks. That is (28Mhz/16)*5 = 5.80 us, which is very fast (90 t-states).
-        // if(ctc0 > 5 )
+        if(ctc0 > 5 )
             break;
     } 
     uint8_t ctc1 = z80_inp(CTC_CHANNEL_1_PORT_193B);
