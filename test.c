@@ -136,20 +136,21 @@ static void init_isr_and_ctc(void)
     #define CTC_CHANNEL_3_PORT_1B3B 0x1B3B
 
     // Init CTC channels 1, 2, and 3 as counters. The counter means that it is counting events from the previous channel.
-    // The event happens when the previous counter rolls over to the setup value (255). 
-    //z80_outp(CTC_CHANNEL_1_PORT_193B, 0x47); // %01000111 => counter|time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_1_PORT_193B, 0x5f); // %01011111  => counter|pulse starts|rising edge|time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_1_PORT_193B, 0); // Init with 0. That starts the counter from 255.
-    z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0x5f);
-    z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0);
-    z80_outp(CTC_CHANNEL_3_PORT_1B3B, 0x5f);
-    z80_outp(CTC_CHANNEL_3_PORT_1B3B, 0);
+    // The event happens when the previous counter rolls over to the setup value (0 or 128)
+    // Note: using 128 as the initial for big end counters so that the value will be correct from the start.
+    //       If 0 is used as the initial value, the ctc3counter will be zero until ctc0 and ctc1 and ctc2 have rolled 
+    //       over once. That can be over 10 seconds. 
+    z80_outp(CTC_CHANNEL_1_PORT_193B, 0x47); //%01000111 => counter|time constant follows|reset|control
+    z80_outp(CTC_CHANNEL_1_PORT_193B, 0); // 0..255
+    z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0x47);
+    z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0); // 0..255
+    z80_outp(CTC_CHANNEL_3_PORT_1B3B, 0x47);
+    z80_outp(CTC_CHANNEL_3_PORT_1B3B, 128);  // 1-128
 
     // Init CTC channel 0 as a timer. Timer means it is counting from the system clock. 
     // Timer means counting from the system clock (28 MHz), but only every 16th clock cycle (that is by design).
-    //z80_outp(CTC_CHANNEL_0_PORT_183B, 0x07); // %00000111 => time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_0_PORT_183B, 0x17); // %00010111 => rising edge|time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_0_PORT_183B, 0); // Init with 0. That starts the timer from 256.
+    z80_outp(CTC_CHANNEL_0_PORT_183B, 0x07); // %00010111 => time constant follows|reset|control
+    z80_outp(CTC_CHANNEL_0_PORT_183B, 0); // 0..255
 
     intrinsic_ei();
 }
@@ -158,7 +159,7 @@ char text[20];
 static void test(void)
 {
     // *** Read CTC counters
-    //intrinsic_di(); // Disable interrrupts.
+    intrinsic_di(); // Disable interrrupts.
     uint8_t ctc0 = 0;
     while(true)
     {
@@ -174,7 +175,7 @@ static void test(void)
     uint8_t ctc1 = z80_inp(CTC_CHANNEL_1_PORT_193B);
     uint8_t ctc2 = z80_inp(CTC_CHANNEL_2_PORT_1A3B);
     uint8_t ctc3 = z80_inp(CTC_CHANNEL_3_PORT_1B3B);
-    //intrinsic_ei(); // Enable interrupts.
+    intrinsic_ei(); // Enable interrupts.
 
     // *** Print counters
     
@@ -195,10 +196,10 @@ static void test(void)
     layer2_draw_text(5, 1+18, text, 0x88, NULL);
     itoa(ctc0, text, 10);
     layer2_draw_text(5, 1+22, text, 0x88, NULL);
-
+ 
     // *** Calc and draw the milliseconds value.
     // ctc0 counts the 28 MHz / 16 clock ticks.
-    uint32_t total_ctc0_ticks = (uint32_t)((((uint32_t)(255-ctc3)) << 24) | (((uint32_t)(255-ctc2)) << 16) | (((uint32_t)(255-ctc1)) << 8) | ((uint32_t)(255-ctc0)));
+    uint32_t total_ctc0_ticks = (uint32_t)((((uint32_t)(128-ctc3)) << 24) | (((uint32_t)(255-ctc2)) << 16) | (((uint32_t)(255-ctc1)) << 8) | ((uint32_t)(255-ctc0)));
     uint32_t milliseconds = total_ctc0_ticks / (28000000 / 16 / 1000);
     ltoa(milliseconds, text, 10);
     layer2_draw_text(6, 1, text, 0x88, NULL);
