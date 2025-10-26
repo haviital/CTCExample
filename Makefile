@@ -25,3 +25,12 @@ debug_sdcc_iy: all_sdcc_iy
 
 clean:
 	$(RM) bin zcc_opt.def zcc_proj.lst *.lis
+
+SYNCDIR   := C:\nextsync
+sync:
+	cp "test.nex" "$(SYNCDIR)/home/"
+	# Warning: kills all running python processes
+	# Remove these two lines and start the server manually if that bothers you
+	-taskkill /F /IM python3.9.exe
+	CMD /C start /d $(SYNCDIR) /min python3.9.exe nextsync.py
+
