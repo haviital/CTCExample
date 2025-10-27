@@ -25,6 +25,11 @@
 #pragma output CLIB_FOPEN_MAX = -1
 #pragma printf = "%c %s"
 
+__sfr __banked __at 0x183b IO_CTC_0;
+__sfr __banked __at 0x193b IO_CTC_1;
+__sfr __banked __at 0x1a3b IO_CTC_2;
+__sfr __banked __at 0x1b3b IO_CTC_3;
+
 /*
  * Define IDE_FRIENDLY in your C IDE to disable Z88DK C extensions and avoid
  * parser errors/warnings in the IDE. Do NOT define IDE_FRIENDLY when compiling
@@ -105,17 +110,18 @@ static void init_isr_and_ctc(void)
     // Note: using 128 as the initial for bigges end counter so that the value will be correct from the start.
     //       If 0 is used as the initial value, the ctc3 counter will be zero until ctc0 and ctc1 and ctc2 have rolled 
     //       over once. That can be over 10 seconds. 
-    z80_outp(CTC_CHANNEL_1_PORT_193B, 0x47); //%01000111 => counter|time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_1_PORT_193B, 0); // 0..255
-    z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0x47);
-    z80_outp(CTC_CHANNEL_2_PORT_1A3B, 0); // 0..255
-    z80_outp(CTC_CHANNEL_3_PORT_1B3B, 0x47);
-    z80_outp(CTC_CHANNEL_3_PORT_1B3B, 128);  // 1-128
+    
+    IO_CTC_1 = 0x47; //%01000111 => counter|time constant follows|reset|control
+    IO_CTC_1 = 0; // 0..255
+    IO_CTC_2 = 0x47;
+    IO_CTC_2 = 0; // 0..255
+    IO_CTC_3 = 0x47;
+    IO_CTC_3 = 128;  // 1-128
 
     // Init CTC channel 0 as a timer. Timer means it is counting from the system clock. 
     // Timer means counting from the system clock (28 MHz), but only every 16th clock cycle (that is by design).
-    z80_outp(CTC_CHANNEL_0_PORT_183B, 0x07); // %00010111 => time constant follows|reset|control
-    z80_outp(CTC_CHANNEL_0_PORT_183B, 0); // 0..255
+    IO_CTC_0 = 0x07; // %00010111 => time constant follows|reset|control
+    IO_CTC_0 = 0; // 0..255
 
     intrinsic_ei();
 }
@@ -129,7 +135,7 @@ static void test(void)
     while(true)
     {
         // Read the ctc0 counter.
-        ctc0 = z80_inp(CTC_CHANNEL_0_PORT_183B);
+        ctc0 = IO_CTC_0;
         
         // If ctc0 is 5 or smaller it can affect to the other chained counters if it reaches 0 before all ctc conters are read.
         // That would give an incorrect result. To avoid that we wait until ctc0 rolls over to 255.
@@ -137,9 +143,9 @@ static void test(void)
         if(ctc0 > 5 )
             break;
     } 
-    uint8_t ctc1 = z80_inp(CTC_CHANNEL_1_PORT_193B);
-    uint8_t ctc2 = z80_inp(CTC_CHANNEL_2_PORT_1A3B);
-    uint8_t ctc3 = z80_inp(CTC_CHANNEL_3_PORT_1B3B);
+    uint8_t ctc1 = IO_CTC_1;
+    uint8_t ctc2 = IO_CTC_2;
+    uint8_t ctc3 = IO_CTC_3;
     intrinsic_ei(); // Enable interrupts.
 
     // *** Print counters
