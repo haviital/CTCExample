@@ -1,6 +1,8 @@
 
 /*******************************************************************************
- * CTC test program for ZX Spectrum Next'
+ * CTC test program for ZX Spectrum Next
+ * The code does not use CTC interrupts, but just reads the CTC counters. CTS acts
+ * like a high-resolution timer or system tics.
  * 2025, by Hannu Viitala
  * Uses MIT license. See LICENSE file for details.
  ******************************************************************************/
